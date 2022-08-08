@@ -5,6 +5,7 @@ import guru.springframwork.msscbrewery.web.model.CustomerDto;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -13,37 +14,37 @@ import java.util.UUID;
 @RequestMapping("/api/v1/customer")
 public class CustomerController {
 
-    private final CustomerService customerService;
+    private CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
     }
 
     @GetMapping("/{customerId}")
-    public ResponseEntity<CustomerDto> getCustomer(@PathVariable UUID customerId) {
+    public ResponseEntity<CustomerDto> getCustomer(@PathVariable("customerId")  UUID customerId){
+
         return new ResponseEntity<>(customerService.getCustomerById(customerId), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<CustomerDto> handlePost(@RequestBody CustomerDto customerDto) {
+    public ResponseEntity handlePost(@RequestBody @Validated
+            CustomerDto customerDto){
         CustomerDto savedDto = customerService.saveNewCustomer(customerDto);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("location", "/api/v1/customer/" + savedDto.getId().toString());
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Location", "/api/v1/customer/" + savedDto.getId().toString());
 
-        return new ResponseEntity<>(headers, HttpStatus.OK);
+        return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
     }
 
     @PutMapping("/{customerId}")
-    public ResponseEntity handleUpdate(@PathVariable("customerId") UUID customerId, @RequestBody CustomerDto customerDto) {
-        customerService.updateBeer(customerId, customerDto);
-
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void handleUpdate(@PathVariable("customerId") UUID customerId, @Validated @RequestBody CustomerDto customerDto){
+        customerService.updateCustomer(customerId, customerDto);
     }
 
     @DeleteMapping("/{customerId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCustomer(@PathVariable("customerId") UUID customerId) {
+    public void deleteById(@PathVariable("customerId")  UUID customerId){
         customerService.deleteById(customerId);
     }
 }
