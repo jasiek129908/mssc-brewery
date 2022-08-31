@@ -20,4 +20,6 @@ public class Beer {
     private String beerName;
     private BeerStyleEnum beerStyle;
     private Long upc;
+    private Timestamp createdDate;
+    private Timestamp lastUpdatedDate;
 }
